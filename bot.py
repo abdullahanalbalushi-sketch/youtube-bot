@@ -261,6 +261,27 @@ async def title_check(interaction: discord.Interaction, title: str):
 
 
 # ─────────────────────────────────────────
+#  أداة ٥: نشر مصدر تعليمي
+# ─────────────────────────────────────────
+@bot.tree.command(name="post_resource", description="انشر رابط أو مصدر تعليمي في روم معين 📌")
+@app_commands.checks.has_permissions(administrator=True)
+@app_commands.describe(
+    channel="الروم اللي تبي تنشر فيه",
+    title="عنوان المصدر أو الرابط",
+    url="الرابط",
+    description="وصف مختصر — اختياري",
+)
+async def post_resource(interaction: discord.Interaction, channel: discord.TextChannel, title: str, url: str, description: str = None):
+    embed = discord.Embed(title=f"📌 {title}", url=url, color=discord.Color.blurple())
+    if description:
+        embed.description = description
+    embed.set_footer(text=f"نشره {interaction.user.display_name}")
+
+    await channel.send(embed=embed)
+    await interaction.response.send_message(f"✅ تم النشر في {channel.mention}", ephemeral=True)
+
+
+# ─────────────────────────────────────────
 #  دليل الاستخدام
 # ─────────────────────────────────────────
 @bot.tree.command(name="tools_help", description="شوف كل الأدوات المتاحة 📖")
@@ -280,5 +301,10 @@ async def tools_help(interaction: discord.Interaction):
 async def on_ready():
     await bot.tree.sync()
     print(f"✅ البوت شغال: {bot.user} | Slash commands synced")
+
+@post_resource.error
+async def post_resource_error(interaction: discord.Interaction, error):
+    if isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message('❌ ما عندك صلاحية استخدام هذا الأمر.', ephemeral=True)
 
 bot.run(TOKEN)
